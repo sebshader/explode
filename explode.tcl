@@ -1,12 +1,14 @@
 # todo: different time signatures, proc to add measures (generally rethink drawing
 # measures), add option to add custom names to keys for use as tracks.
 # also add relative/ absolute grid option
+package require Tk
+
 set measures 50.0
 set basecwidth [expr $measures * 125]
 set basecheight 2048
 set cheight $basecheight
 set cwidth $basecwidth
-# This is a global state variable for everything:
+# state is a global state variable for everything:
 # bit positions: 0 is mode, 1 is canvas drag, 2 is inside note, 3 is note 
 # selected, 4 is note resizing, 5 is left/right resize, 6 is cursor black/ blue
 set xgrid 0.125
@@ -498,7 +500,13 @@ bind .c.test.inframe.canvas <B1-Motion> {
 				if {$ypos != [lindex $prespos 1]} {
 					set prespos [lreplace $prespos 1 1 [expr $ypos + [lindex $prespos 1]]]
 				}
-				.c.test.inframe.canvas move selected $xpos $ypos
+				foreach note [.c.test.inframe.canvas find withtag selected] {
+					set notex [expr {min(max(-[lindex [.c.test.inframe.canvas coords $note] 0], $xpos), \
+						$cwidth - [lindex [.c.test.inframe.canvas coords $note] 2])}]
+					set notey [expr {min(max(-[lindex [.c.test.inframe.canvas coords $note] 1], $ypos), \
+						$cheight - [lindex [.c.test.inframe.canvas coords $note] 3])}]
+					.c.test.inframe.canvas move $note $notex $notey
+				}
 			}
 		} else {
 			#move selection box
